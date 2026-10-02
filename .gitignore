@@ -2,3 +2,7 @@ venv
 venv/
 .venv
 venv/*
+images/
+images/*
+outputs/
+outputs/*
