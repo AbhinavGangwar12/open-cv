@@ -11,13 +11,15 @@ def find_document_corners(image_path : str ) -> list:
     canny = cv2.Canny(gaussian, threshold1=75, threshold2=200)
 
     contours , hierarchy = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return []
     sorted_contours = sorted(contours, key=cv2.contourArea, reverse=True)
     c = sorted_contours[0]
 
     epsilon = 0.02 * cv2.arcLength(c, True)
     approx = cv2.approxPolyDP(c, epsilon=epsilon, closed=True)
     if approx.shape[0] == 4:
-        return [approx[i, :,:] for i in range(approx.shape[0])]
+        return [tuple(pt[0]) for pt in approx]
     return []
 
 print(find_document_corners("images/sample.jpg"))

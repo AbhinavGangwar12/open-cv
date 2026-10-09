@@ -2,7 +2,7 @@
 from langchain.tools import tool
 import cv2 
 import math
-
+import numpy as np
 #1 
 @tool 
 def count_objects(image_path: str):
@@ -51,3 +51,53 @@ def is_circle(contour):
     if lower <= area <= upper:
         return True
     return False
+
+# 4
+@tool
+def find_icon(screen_path: str, icon_path: str):
+    """ returns the top-left (x,y) coordinates of the icon on the screen."""
+    screen = cv2.imread(screen_path, cv2.IMREAD_GRAYSCALE)
+    if screen is None: raise FileNotFoundError("Image not found")
+    icon = cv2.imread(icon_path, cv2.IMREAD_GRAYSCALE)
+    if icon is None: raise FileNotFoundError("Image not found")
+
+    res = cv2.matchTemplate(screen, icon, cv2.TM_CCOEFF_NORMED)
+    _, _, _, top_left = cv2.minMaxLoc(res)
+    return top_left
+
+
+# 5
+def centroid(c):
+    M = cv2.moments(c)
+    if M["00"] != 0:
+        cX = M["10"] / M["00"]
+        cY = M["01"] / M["00"]
+        return cX, cY 
+
+    return (0,0)
+
+# 6
+
+# FATAL FLAW FIX: Must be a single-channel image for findContours, not 3 channels.
+img = np.zeros((500, 500), dtype=np.uint8)
+
+# Draw a filled white triangle
+points = np.array([[250, 100], [100, 400], [400, 400]], dtype=np.int32)
+cv2.fillPoly(img, [points], color=255)
+
+contours, _ = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+if contours:
+    c = contours[0]
+    
+    # FATAL FLAW FIX: Pass 'c' (the array), not 'contours' (the list).
+    perimeter = cv2.arcLength(c, True)
+    epsilon = 0.02 * perimeter
+    approx = cv2.approxPolyDP(c, epsilon, True)
+    
+    print(f"Points found: {len(approx)}")
+    if len(approx) == 3:
+        print("YES")
+    else:
+        print("NO")
+    
