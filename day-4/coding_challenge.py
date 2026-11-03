@@ -14,7 +14,6 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         raise RuntimeError("Video not found!")
-
     curr = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     diff = cv2.absdiff(curr, prev)
     _, thresh = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)
